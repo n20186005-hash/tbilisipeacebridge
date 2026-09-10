@@ -1,0 +1,8 @@
+packages:
+  - '.'
+
+# pnpm 12 的构建脚本白名单（替代已废弃的 onlyBuiltDependencies）
+allowBuilds:
+  esbuild: true
+  workerd: true
+  sharp: true
