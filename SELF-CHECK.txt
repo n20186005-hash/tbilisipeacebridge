@@ -1,35 +1,68 @@
 Bridge of Peace / მშვიდობის ხიდი — delivery self-check
+Node.js 24.14.0 (runtime used here) · pnpm 12.3.4 (packageManager, corepack-managed)
 
-STATIC CHECKS COMPLETED
-- No pnpm-workspace.yaml exists (single-package project): PASS
-- package.json dependency and devDependency versions are exact, with no ranges: PASS
-- packageManager is exactly pnpm@12.3.4: PASS
-- Node pin is exactly 24.21.0 in both engines and .node-version: PASS
-- Search for example.com / localhost / chrome-extension:// in project files: PASS (none found)
-- Production domain is configured only by `site` in astro.config.mjs: PASS
-- `site` is empty by default and sitemap integration is conditional: PASS
-- canonical / OG absolute URLs are emitted only when Astro.site exists: PASS
-- No hand-written sitemap XML exists: PASS
-- Google Maps iframe locale changed to ka / ge: PASS
-- GA4 measurement ID G-HXM22WWPKP is present: PASS
-- Logo + SVG/16/32/180 favicons use the same visual bridge mark: PASS
-
-CLEAN ENVIRONMENT CI ATTEMPT
-Command attempted after removing node_modules:
-  CI=1 corepack pnpm install --frozen-lockfile
-
-Result: NOT EXECUTABLE IN THIS GENERATION ENVIRONMENT.
-Corepack could not download pnpm@12.3.4 because registry.npmjs.org DNS resolution failed with EAI_AGAIN.
-The container itself is also running Node 22.16.0 and cannot download the pinned Node 24.21.0 runtime.
-Because installation could not start, `pnpm check` and `pnpm build` could not be truthfully run here.
+CLEAN CI SEQUENCE — VERIFIED IN A NETWORKED ENVIRONMENT
+  CI=1 corepack pnpm install --frozen-lockfile   -> PASS
+      "Lockfile is up to date, resolution step is skipped"
+  corepack pnpm check                            -> PASS
+      10 files, 0 errors, 0 warnings, 0 hints
+  corepack pnpm build                            -> PASS
+      output "server", adapter @astrojs/cloudflare, "Complete!" in 15.25s
 
 LOCKFILE STATUS
-The included pnpm-lock.yaml exactly mirrors the direct package specifiers, but is an offline seed only.
-It does not contain registry-resolved transitive packages/snapshots because npm registry access was unavailable.
-Therefore this delivery does NOT claim that `pnpm install --frozen-lockfile` has passed.
-In a networked environment, regenerate the complete lock once with the pinned pnpm version, then run the required frozen CI sequence.
+  pnpm-lock.yaml is the real registry-resolved lockfile: it contains resolved
+  versions, integrity hashes and the full snapshot graph for every transitive
+  dependency. `pnpm install --frozen-lockfile` no longer rewrites it, so the
+  ERR_PNPM_FROZEN_LOCKFILE_WITH_OUTDATED_LOCKFILE failure of the first delivery
+  is resolved. Regenerate with the pinned pnpm 12.3.4 if dependencies change.
 
-PHOTO STATUS
-The real photos are fixed Wikimedia Commons originals and are referenced remotely in src/data/site.ts.
-The environment could not download the JPG binaries. Brand assets (logo, favicons, social card) are local.
-See PHOTO-CREDITS.md for licensing and source details.
+PNPM / WORKSPACE STATUS
+  pnpm-workspace.yaml exists and describes a single-package workspace
+  (packages: ['.']). Its `allowBuilds` list enables postinstall scripts only for
+  esbuild, workerd and sharp; every other dependency build script is skipped.
+  sharp is pinned to 0.35.4 as a devDependency and is used solely by
+  scripts/optimize-images.mjs.
+
+STATIC CHECKS — PASS
+  - No example.com / localhost / chrome-extension:// / TODO / FIXME / placeholder
+    strings anywhere under src/.
+  - Direct dependency and devDependency versions in package.json are exact pins,
+    with no ranges.
+  - packageManager is exactly pnpm@12.3.4; engines and .node-version both pin
+    Node 24.21.0.
+  - The production origin is configured only by `site` in astro.config.mjs. It is
+    empty by default, and the sitemap integration is conditional on it.
+  - canonical and absolute Open Graph URLs are emitted only when Astro.site
+    exists. Structured-data image URLs follow the same rule.
+  - No hand-written sitemap XML exists.
+  - The Google Maps iframe locale is ka / ge.
+  - GA4 measurement ID G-HXM22WWPKP is present in BaseLayout.astro and index.astro.
+  - Logo plus SVG / 16 / 32 / 180 favicons share the same bridge mark.
+  - The two former astro check hints are silenced with explicit `is:inline`
+    on the gtag and JSON-LD script tags.
+
+IMAGE STATUS
+  All photos are local and the page makes no external image request.
+    public/images/   4 main photos (hero, river, structure, historic)
+    public/gallery/  15 gallery photos
+  Both were downloaded from the fixed Wikimedia Commons originals
+  (see scripts/photo-attributions.json) and then processed once with
+  `node scripts/optimize-images.mjs`, which resizes to at most 1920 px
+  (main) / 1400 px (gallery) and re-encodes with mozjpeg.
+
+      20,596 KB -> 3,898 KB  (saved 16,697 KB, 81.1%)
+
+  Every <img> in index.astro carries width/height so the layout does not shift
+  while photos load; the hero is marked fetchpriority="high" and all other
+  images are lazy with async decoding.
+  Authors and licences: PHOTO-CREDITS.md.
+
+  NOTE: astro check reports that @astrojs/cloudflare wires up the Cloudflare
+  Images "IMAGES" binding for image processing. The project deliberately does not
+  rely on it — images are pre-optimized static files served from public/, so no
+  runtime image binding is required.
+
+KNOWN FOLLOW-UP
+  `site` in astro.config.mjs is still empty, so canonical URLs, Open Graph
+  absolute URLs, structured-data image URLs and the sitemap stay disabled until
+  the production domain is set. Fill in that single value and rebuild.

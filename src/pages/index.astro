@@ -1,11 +1,19 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { attraction, photos } from '../data/site';
+import { attraction, photos, gallery } from '../data/site';
 
 const pageTitle = 'მშვიდობის ხიდი — თბილისის მინისა და სინათლის ხიდი';
 const pageDescription = 'მშვიდობის ხიდის ერთგვერდიანი გზამკვლევი: ისტორია, საუკეთესო დრო, მისვლა, უფასო მონახულება, პარკინგი, ახლომდებარე ადგილები, ქართული გემოები და რუკა.';
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const attractionId = canonicalUrl ? `${canonicalUrl}#attraction` : undefined;
+// Structured data requires absolute image URLs, so it is emitted only once the
+// production origin is set in astro.config.mjs.
+const siteOrigin = Astro.site ? new URL('/', Astro.site).toString().replace(/\/$/, '') : undefined;
+const photoUrls = siteOrigin
+  ? [photos.hero.src, photos.river.src, photos.structure.src, photos.historic.src].map(
+      (src) => `${siteOrigin}${src}`
+    )
+  : undefined;
 
 const openingHours = [
   'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
@@ -23,6 +31,7 @@ const attractionLd = {
   name: attraction.name,
   description: 'თანამედროვე საფეხმავლო ხიდი მტკვარზე, რომელიც რიყის პარკსა და ერეკლე II-ის ქუჩას აკავშირებს. მინისა და ფოლადის კონსტრუქცია ღამით ათიათასობით ნათურით ინთება.',
   ...(canonicalUrl ? { url: canonicalUrl } : {}),
+  ...(photoUrls ? { image: photoUrls } : {}),
   address: {
     '@type': 'PostalAddress',
     streetAddress: 'მშვიდობის ხიდი — რიყის პარკი / ერეკლე II-ის ქუჩა',
@@ -117,6 +126,7 @@ const food = [
         <a class="no-underline hover:text-white" href="#story">ხიდი</a>
         <a class="no-underline hover:text-white" href="#visit">ვიზიტი</a>
         <a class="no-underline hover:text-white" href="#around">ახლოს</a>
+        <a class="no-underline hover:text-white" href="#gallery">გალერეა</a>
         <a class="no-underline hover:text-white" href="#map">რუკა</a>
         <a class="no-underline hover:text-white" href="#faq">FAQ</a>
       </nav>
@@ -127,7 +137,7 @@ const food = [
   <main id="top">
     <section class="relative min-h-[92vh] overflow-hidden pt-28">
       <div class="absolute inset-0">
-        <img src={photos.hero.src} alt={photos.hero.alt} class="h-full w-full object-cover object-center" fetchpriority="high" />
+        <img src={photos.hero.src} width={photos.hero.width} height={photos.hero.height} alt={photos.hero.alt} class="h-full w-full object-cover object-center" fetchpriority="high" decoding="async" />
         <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,14,20,.94)_0%,rgba(4,14,20,.78)_38%,rgba(4,14,20,.28)_72%,rgba(4,14,20,.72)_100%)]"></div>
         <div class="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#061016] to-transparent"></div>
       </div>
@@ -195,7 +205,7 @@ const food = [
 
           <div class="relative">
             <div class="overflow-hidden rounded-[2rem] border border-[var(--line)]">
-              <img src={photos.river.src} alt={photos.river.alt} loading="lazy" class="aspect-[4/3] w-full object-cover" />
+              <img src={photos.river.src} width={photos.river.width} height={photos.river.height} alt={photos.river.alt} loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover" />
             </div>
             <div class="glass relative -mt-14 ml-5 max-w-md rounded-[1.6rem] p-5 md:ml-auto md:mr-6 md:p-6">
               <div class="text-sm font-bold text-[var(--cyan)]">სივრცის მთავარი იდეა</div>
@@ -289,7 +299,7 @@ const food = [
       <div class="shell grid gap-10 lg:grid-cols-[.95fr_1.05fr] lg:items-center">
         <div class="relative order-2 lg:order-1">
           <div class="overflow-hidden rounded-[2rem] border border-[var(--line)]">
-            <img src={photos.structure.src} alt={photos.structure.alt} loading="lazy" class="aspect-[5/4] w-full object-cover" />
+            <img src={photos.structure.src} width={photos.structure.width} height={photos.structure.height} alt={photos.structure.alt} loading="lazy" decoding="async" class="aspect-[5/4] w-full object-cover" />
           </div>
           <div class="mt-3 text-[10px] text-white/45">{photos.structure.credit}</div>
         </div>
@@ -354,7 +364,7 @@ const food = [
     </section>
 
     <section class="relative min-h-[58vh] overflow-hidden border-y border-[var(--line)]">
-      <img src={photos.historic.src} alt={photos.historic.alt} loading="lazy" class="absolute inset-0 h-full w-full object-cover" />
+      <img src={photos.historic.src} width={photos.historic.width} height={photos.historic.height} alt={photos.historic.alt} loading="lazy" decoding="async" class="absolute inset-0 h-full w-full object-cover" />
       <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,15,21,.93),rgba(4,15,21,.45),rgba(4,15,21,.82))]"></div>
       <div class="shell relative z-10 flex min-h-[58vh] items-center py-20">
         <div class="max-w-xl">
@@ -364,6 +374,35 @@ const food = [
         </div>
       </div>
       <div class="absolute bottom-4 right-4 z-10 rounded-full bg-black/45 px-3 py-1 text-[10px] text-white/70 backdrop-blur">{photos.historic.credit}</div>
+    </section>
+
+    <section id="gallery" class="section border-t border-[var(--line)]">
+      <div class="shell">
+        <div class="grid gap-8 lg:grid-cols-[.7fr_1.3fr] lg:items-end">
+          <div>
+            <div class="eyebrow">გალერეა</div>
+            <h2 class="section-title">ხიდი დღისით,<br />ბინდსა და ღამით.</h2>
+          </div>
+          <p class="section-lede">15 რეალური ფოტო ძველი თბილისიდან, ნარიყალის ფერდობიდან და თავად ხიდიდან — ყველა Wikimedia Commons-იდან და ლოკალურად ჩატვირთული. ავტორები და ლიცენზიები მითითებულია თითოეული კადრის ქვეშ.</p>
+        </div>
+
+        <div class="mt-10 gap-4 sm:columns-2 lg:columns-3">
+          {gallery.map((item) => (
+            <figure class="glass reveal-card mb-4 break-inside-avoid overflow-hidden rounded-[1.4rem]">
+              <img
+                src={item.src}
+                width={item.width}
+                height={item.height}
+                alt={item.alt}
+                loading="lazy"
+                decoding="async"
+                class="w-full object-cover"
+              />
+              <figcaption class="px-4 py-3 text-[10px] leading-5 text-white/50">{item.credit}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
     </section>
 
     <section id="map" class="section">

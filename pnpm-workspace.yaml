@@ -1,7 +1,8 @@
 packages:
   - '.'
 
-# pnpm 12 的构建脚本白名单（替代已废弃的 onlyBuiltDependencies）
+# pnpm 12 的构建脚本白名单（Build Settings → allowBuilds）。
+# 未列入的依赖，其 postinstall 脚本会被跳过。
 allowBuilds:
   esbuild: true
   workerd: true
