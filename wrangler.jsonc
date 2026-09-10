@@ -1,8 +1,4 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tiger-hill-sunrise-viewpoint",
-  "compatibility_date": "2026-09-10",
-  "assets": {
-    "directory": "./dist"
-  }
+  "name": "bridge-of-peace-tbilisi"
 }

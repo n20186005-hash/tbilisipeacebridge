@@ -1,0 +1,35 @@
+Bridge of Peace / მშვიდობის ხიდი — delivery self-check
+
+STATIC CHECKS COMPLETED
+- No pnpm-workspace.yaml exists (single-package project): PASS
+- package.json dependency and devDependency versions are exact, with no ranges: PASS
+- packageManager is exactly pnpm@12.3.4: PASS
+- Node pin is exactly 24.21.0 in both engines and .node-version: PASS
+- Search for example.com / localhost / chrome-extension:// in project files: PASS (none found)
+- Production domain is configured only by `site` in astro.config.mjs: PASS
+- `site` is empty by default and sitemap integration is conditional: PASS
+- canonical / OG absolute URLs are emitted only when Astro.site exists: PASS
+- No hand-written sitemap XML exists: PASS
+- Google Maps iframe locale changed to ka / ge: PASS
+- GA4 measurement ID G-HXM22WWPKP is present: PASS
+- Logo + SVG/16/32/180 favicons use the same visual bridge mark: PASS
+
+CLEAN ENVIRONMENT CI ATTEMPT
+Command attempted after removing node_modules:
+  CI=1 corepack pnpm install --frozen-lockfile
+
+Result: NOT EXECUTABLE IN THIS GENERATION ENVIRONMENT.
+Corepack could not download pnpm@12.3.4 because registry.npmjs.org DNS resolution failed with EAI_AGAIN.
+The container itself is also running Node 22.16.0 and cannot download the pinned Node 24.21.0 runtime.
+Because installation could not start, `pnpm check` and `pnpm build` could not be truthfully run here.
+
+LOCKFILE STATUS
+The included pnpm-lock.yaml exactly mirrors the direct package specifiers, but is an offline seed only.
+It does not contain registry-resolved transitive packages/snapshots because npm registry access was unavailable.
+Therefore this delivery does NOT claim that `pnpm install --frozen-lockfile` has passed.
+In a networked environment, regenerate the complete lock once with the pinned pnpm version, then run the required frozen CI sequence.
+
+PHOTO STATUS
+The real photos are fixed Wikimedia Commons originals and are referenced remotely in src/data/site.ts.
+The environment could not download the JPG binaries. Brand assets (logo, favicons, social card) are local.
+See PHOTO-CREDITS.md for licensing and source details.

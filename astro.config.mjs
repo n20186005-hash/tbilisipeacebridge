@@ -1,18 +1,18 @@
 import { defineConfig } from 'astro/config';
+import cloudflare from '@astrojs/cloudflare';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
-// साइटको वास्तविक डोमेन तय भएपछि यही एक ठाउँमा मात्र राख्नुहोस्।
-// डोमेन नहुँदा undefined नै राख्नुहोस्; canonical/OG URL र sitemap स्वतः सुरक्षित रूपमा हट्छन्।
-const site = undefined;
+// Production origin: set the final domain in this one place only.
+// Leave empty until the domain is known; the project still builds without it.
+const site = '';
 
 export default defineConfig({
-  site,
+  site: site || undefined,
+  output: 'server',
+  adapter: cloudflare(),
   integrations: site ? [sitemap()] : [],
   vite: {
     plugins: [tailwindcss()]
-  },
-  build: {
-    format: 'directory'
   }
 });
