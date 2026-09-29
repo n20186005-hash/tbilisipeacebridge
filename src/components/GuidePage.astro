@@ -1,0 +1,454 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { attraction, photos, gallery } from '../data/site';
+import { content, htmlLang, ogLocale, buildAlternates, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = content[locale];
+
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
+const attractionId = canonicalUrl ? `${canonicalUrl}#attraction` : undefined;
+const siteOrigin = Astro.site ? new URL('/', Astro.site).toString().replace(/\/$/, '') : undefined;
+const photoUrls = siteOrigin
+  ? [photos.hero.src, photos.river.src, photos.structure.src, photos.historic.src].map((s) => `${siteOrigin}${s}`)
+  : undefined;
+
+const reviewCountStr = attraction.reviewCount.toLocaleString(
+  locale === 'ru' ? 'ru-RU' : locale === 'ka' ? 'ka-GE' : 'en-US'
+);
+
+const openingHours = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(
+  (dayOfWeek) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek,
+    opens: '00:00',
+    closes: '23:59'
+  })
+);
+
+const attractionLd = {
+  '@context': 'https://schema.org',
+  '@type': ['TouristAttraction', 'LocalBusiness'],
+  ...(attractionId ? { '@id': attractionId } : {}),
+  name: attraction.names[locale],
+  description: t.attractionDescription,
+  ...(canonicalUrl ? { url: canonicalUrl } : {}),
+  ...(photoUrls ? { image: photoUrls } : {}),
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: attraction.streetAddress[locale],
+    addressLocality: attraction.city,
+    addressRegion: attraction.region,
+    postalCode: attraction.postalCode,
+    addressCountry: 'GE'
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: attraction.latitude,
+    longitude: attraction.longitude
+  },
+  openingHoursSpecification: openingHours,
+  priceRange: attraction.priceFreeLabel[locale],
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: attraction.ratingValue,
+    reviewCount: attraction.reviewCount,
+    bestRating: 5,
+    worstRating: 1
+  },
+  isAccessibleForFree: true,
+  publicAccess: true,
+  sameAs: [attraction.mapShortUrl]
+};
+
+const faqLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: t.faq.items.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.a
+    }
+  }))
+};
+
+const alt = (p: { alt: string; altEn: string; altRu: string }) =>
+  locale === 'en' ? p.altEn : locale === 'ru' ? p.altRu : p.alt;
+
+const brandSub = locale === 'en' ? 'Tbilisi · Kura' : locale === 'ru' ? 'Тбилиси · Кура' : 'თბილისი · მტკვარი';
+const navLabel = locale === 'en' ? 'Main navigation' : locale === 'ru' ? 'Главная навигация' : 'მთავარი ნავიგაცია';
+const langLabel = locale === 'en' ? 'Language' : locale === 'ru' ? 'Язык' : 'ენა';
+const photosLabel = locale === 'en' ? 'Photos: Wikimedia Commons' : locale === 'ru' ? 'Фото: Wikimedia Commons' : 'ფოტოები: Wikimedia Commons';
+const homeHref = locale === 'ka' ? '#top' : `/${locale}/#top`;
+const homeAria = locale === 'en' ? 'Back to top' : locale === 'ru' ? 'Наверх' : 'მთავარ ნაწილზე გადასვლა';
+
+const switchItems: { code: string; href: string; label: string }[] = [
+  { code: 'KA', href: '/', label: 'ქართული' },
+  { code: 'EN', href: '/en/', label: 'English' },
+  { code: 'RU', href: '/ru/', label: 'Русский' }
+];
+---
+
+<BaseLayout
+  title={t.pageTitle}
+  description={t.pageDescription}
+  htmlLang={htmlLang[locale]}
+  ogLocale={ogLocale[locale]}
+  hreflangAlternates={buildAlternates()}
+  jsonLd={[attractionLd, faqLd]}
+>
+  <header class="fixed inset-x-0 top-0 z-50 pt-4">
+    <div class="shell glass flex items-center justify-between gap-4 rounded-full px-4 py-3 md:px-5">
+      <a href={homeHref} class="flex min-w-0 items-center gap-3 no-underline" aria-label={homeAria}>
+        <img src="/logo.svg" width="42" height="42" alt={attraction.names[locale]} class="h-10 w-10 shrink-0" />
+        <div class="min-w-0 leading-tight">
+          <div class="truncate text-sm font-bold tracking-[-.02em] md:text-base">{attraction.names[locale]}</div>
+          <div class="hidden text-[10px] uppercase tracking-[.18em] text-[var(--muted)] sm:block">{brandSub}</div>
+        </div>
+      </a>
+      <nav class="hidden items-center gap-5 text-xs font-semibold text-[#c9dde2] lg:flex" aria-label={navLabel}>
+        <a class="no-underline hover:text-white" href={locale === 'ka' ? '#story' : `/${locale}/#story`}>{t.nav.story}</a>
+        <a class="no-underline hover:text-white" href={locale === 'ka' ? '#visit' : `/${locale}/#visit`}>{t.nav.visit}</a>
+        <a class="no-underline hover:text-white" href={locale === 'ka' ? '#around' : `/${locale}/#around`}>{t.nav.around}</a>
+        <a class="no-underline hover:text-white" href={locale === 'ka' ? '#gallery' : `/${locale}/#gallery`}>{t.nav.gallery}</a>
+        <a class="no-underline hover:text-white" href={locale === 'ka' ? '#map' : `/${locale}/#map`}>{t.nav.map}</a>
+        <a class="no-underline hover:text-white" href={locale === 'ka' ? '#faq' : `/${locale}/#faq`}>{t.nav.faq}</a>
+      </nav>
+      <div class="flex items-center gap-1 rounded-full border border-[var(--line)] px-1 py-1 text-[11px] font-bold">
+        {switchItems.map((s) => (
+          <a
+            href={s.href}
+            class:list={[
+              'rounded-full px-2.5 py-1 no-underline transition-colors',
+              s.code.toLowerCase() === locale ? 'bg-[var(--cyan)] text-[#06121a]' : 'text-[#c9dde2] hover:text-white'
+            ]}
+            hreflang={s.code.toLowerCase()}
+            aria-current={s.code.toLowerCase() === locale ? 'true' : undefined}
+            title={s.label}
+          >{s.code}</a>
+        ))}
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="relative min-h-[92vh] overflow-hidden pt-28">
+      <div class="absolute inset-0">
+        <img src={photos.hero.src} width={photos.hero.width} height={photos.hero.height} alt={alt(photos.hero)} class="h-full w-full object-cover object-center" fetchpriority="high" decoding="async" />
+        <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,14,20,.94)_0%,rgba(4,14,20,.78)_38%,rgba(4,14,20,.28)_72%,rgba(4,14,20,.72)_100%)]"></div>
+        <div class="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-[#061016] to-transparent"></div>
+      </div>
+
+      <svg class="bridge-line left-[-5%] top-[18%] h-[50%] w-[110%]" viewBox="0 0 1200 450" fill="none" aria-hidden="true">
+        <path d="M4 325C180 88 334 78 511 244C674 397 887 359 1198 121" stroke="#9ff8ff" stroke-width="1.2"/>
+        <path d="M-14 351C182 120 342 108 516 264C684 416 899 374 1220 144" stroke="#9ff8ff" stroke-opacity=".34" stroke-width="1"/>
+        <g stroke="#9ff8ff" stroke-opacity=".22" stroke-width=".8">
+          <path d="M114 226L160 342"/><path d="M204 142L245 317"/><path d="M302 111L329 304"/><path d="M404 157L415 304"/><path d="M512 244L503 319"/><path d="M624 323L602 344"/><path d="M746 371L724 362"/><path d="M869 354L870 323"/><path d="M1001 277L1027 227"/>
+        </g>
+      </svg>
+
+      <div class="shell relative z-10 flex min-h-[78vh] items-end pb-12 md:pb-16">
+        <div class="grid w-full gap-8 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
+          <div>
+            <div class="eyebrow">{t.hero.eyebrow}</div>
+            <h1 class="mt-5 max-w-[820px] text-[clamp(3rem,8vw,7rem)] font-semibold leading-[.9] tracking-[-.065em] text-white" set:html={t.hero.title}></h1>
+            <p class="mt-6 max-w-2xl text-base leading-8 text-[#d2e2e6] md:text-lg">{t.hero.sub}</p>
+            <div class="mt-7 flex flex-wrap gap-3">
+              <a class="btn btn-primary" href={locale === 'ka' ? '#visit' : `/${locale}/#visit`}>{t.hero.ctaVisit}</a>
+              <a class="btn btn-secondary" href={locale === 'ka' ? '#story' : `/${locale}/#story`}>{t.hero.ctaStory}</a>
+            </div>
+          </div>
+
+          <div class="glass grid grid-cols-2 overflow-hidden rounded-[2rem] lg:grid-cols-1">
+            <div class="border-b border-r border-[var(--line)] p-5 lg:border-r-0">
+              <div class="text-3xl font-semibold tracking-[-.04em]">{attraction.opened}</div>
+              <div class="mt-1 text-xs text-[var(--muted)]">{t.stats.opened}</div>
+            </div>
+            <div class="border-b border-[var(--line)] p-5">
+              <div class="text-3xl font-semibold tracking-[-.04em]">≈ {attraction.lengthMeters} {locale === 'ka' ? 'მ' : locale === 'ru' ? 'м' : 'm'}</div>
+              <div class="mt-1 text-xs text-[var(--muted)]">{t.stats.length}</div>
+            </div>
+            <div class="border-r border-[var(--line)] p-5 lg:border-r-0 lg:border-b">
+              <div class="text-3xl font-semibold tracking-[-.04em]">≈ {attraction.ledCount.toLocaleString('en-US')}</div>
+              <div class="mt-1 text-xs text-[var(--muted)]">{t.stats.led}</div>
+            </div>
+            <div class="p-5">
+              <div class="flex items-center gap-2 text-3xl font-semibold tracking-[-.04em]"><span class="text-[var(--cyan)]">★</span>{attraction.ratingValue}</div>
+              <div class="mt-1 text-xs text-[var(--muted)]">{t.stats.rating} {reviewCountStr}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="absolute bottom-4 right-4 z-10 rounded-full bg-black/45 px-3 py-1 text-[10px] text-white/70 backdrop-blur md:bottom-6 md:right-6">{photos.hero.credit}</div>
+    </section>
+
+    <section id="story" class="section overflow-hidden">
+      <div class="shell">
+        <div class="grid items-start gap-10 lg:grid-cols-[.9fr_1.1fr] lg:gap-16">
+          <div class="lg:sticky lg:top-28">
+            <div class="eyebrow">{t.story.eyebrow}</div>
+            <h2 class="section-title" set:html={t.story.title}></h2>
+            {t.story.lede.map((p) => <p class="section-lede">{p}</p>)}
+          </div>
+
+          <div class="relative">
+            <div class="overflow-hidden rounded-[2rem] border border-[var(--line)]">
+              <img src={photos.river.src} width={photos.river.width} height={photos.river.height} alt={alt(photos.river)} loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover" />
+            </div>
+            <div class="glass relative -mt-14 ml-5 max-w-md rounded-[1.6rem] p-5 md:ml-auto md:mr-6 md:p-6">
+              <div class="text-sm font-bold text-[var(--cyan)]">{t.story.cards[1].t}</div>
+              <p class="mt-3 text-sm leading-7 text-[#c9dbe0]">{t.story.cards[1].d}</p>
+            </div>
+            <div class="mt-3 text-right text-[10px] text-white/45">{photos.river.credit}</div>
+          </div>
+        </div>
+
+        <div class="mt-16 grid gap-4 md:grid-cols-3">
+          {t.story.cards.map((card) => (
+            <article class="glass reveal-card rounded-[1.6rem] p-6">
+              <div class="text-xs font-bold uppercase tracking-[.16em] text-[var(--cyan)]">{card.k}</div>
+              <h3 class="mt-5 text-xl font-semibold">{card.t}</h3>
+              <p class="mt-3 text-sm leading-7 text-[var(--muted)]">{card.d}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="visit" class="section grid-skin border-y border-[var(--line)] bg-[#07151c]/80">
+      <div class="shell">
+        <div class="eyebrow">{t.visit.eyebrow}</div>
+        <div class="mt-3 grid gap-8 lg:grid-cols-[1.05fr_.95fr] lg:items-end">
+          <div>
+            <h2 class="section-title" set:html={t.visit.title}></h2>
+          </div>
+          <p class="section-lede lg:justify-self-end">{t.visit.lede}</p>
+        </div>
+
+        <div class="mt-10 grid gap-4 lg:grid-cols-12">
+          <article class="glass rounded-[2rem] p-6 lg:col-span-7 md:p-8">
+            <div class="flex items-center justify-between gap-5">
+              <div>
+                <div class="text-xs font-bold uppercase tracking-[.15em] text-[var(--cyan)]">{t.visit.bestTime.label}</div>
+                <h3 class="mt-3 text-2xl font-semibold tracking-[-.03em]">{t.visit.bestTime.h}</h3>
+              </div>
+              <span class="pill px-3 py-1 text-[11px] text-[#cde5e9]">{t.visit.bestTime.pill}</span>
+            </div>
+            <div class="mt-8 grid gap-4 sm:grid-cols-3">
+              {t.visit.bestTime.cards.map((c) => (
+                <div class="rounded-2xl border border-[var(--line)] bg-black/10 p-4">
+                  <div class="text-2xl">{c.icon}</div><div class="mt-3 font-bold">{c.t}</div><p class="mt-2 text-xs leading-6 text-[var(--muted)]">{c.d}</p>
+                </div>
+              ))}
+            </div>
+            <p class="mt-6 text-sm leading-7 text-[#bdd0d5]">{t.visit.bestTime.note}</p>
+          </article>
+
+          <article class="glass rounded-[2rem] p-6 lg:col-span-5 md:p-8">
+            <div class="text-xs font-bold uppercase tracking-[.15em] text-[var(--cyan)]">{t.visit.ticket.label}</div>
+            <div class="mt-5 text-[clamp(2.8rem,6vw,5rem)] font-semibold tracking-[-.06em]">₾ 0</div>
+            <h3 class="mt-2 text-xl font-semibold">{t.visit.ticket.t}</h3>
+            <p class="mt-3 text-sm leading-7 text-[var(--muted)]">{t.visit.ticket.d}</p>
+            <div class="mt-6 border-t border-[var(--line)] pt-5 text-xs leading-6 text-[#bcd0d5]">{t.visit.ticket.note}</div>
+          </article>
+
+          <article class="glass rounded-[2rem] p-6 lg:col-span-4">
+            <div class="text-xs font-bold uppercase tracking-[.15em] text-[var(--cyan)]">{t.visit.access.label}</div>
+            <h3 class="mt-4 text-xl font-semibold">{t.visit.access.t}</h3>
+            <p class="mt-3 text-sm leading-7 text-[var(--muted)]">{t.visit.access.d}</p>
+          </article>
+          <article class="glass rounded-[2rem] p-6 lg:col-span-4">
+            <div class="text-xs font-bold uppercase tracking-[.15em] text-[var(--cyan)]">{t.visit.parking.label}</div>
+            <h3 class="mt-4 text-xl font-semibold">{t.visit.parking.t}</h3>
+            <p class="mt-3 text-sm leading-7 text-[var(--muted)]">{t.visit.parking.d}</p>
+          </article>
+          <article class="glass rounded-[2rem] p-6 lg:col-span-4">
+            <div class="text-xs font-bold uppercase tracking-[.15em] text-[var(--cyan)]">{t.visit.address.label}</div>
+            <h3 class="mt-4 text-xl font-semibold">{t.visit.address.t}</h3>
+            <p class="mt-3 text-sm leading-7 text-[var(--muted)]">{t.visit.address.d}<br />{t.map.plusCodeLabel} {attraction.plusCode}</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section overflow-hidden">
+      <div class="shell grid gap-10 lg:grid-cols-[.95fr_1.05fr] lg:items-center">
+        <div class="relative order-2 lg:order-1">
+          <div class="overflow-hidden rounded-[2rem] border border-[var(--line)]">
+            <img src={photos.structure.src} width={photos.structure.width} height={photos.structure.height} alt={alt(photos.structure)} loading="lazy" decoding="async" class="aspect-[5/4] w-full object-cover" />
+          </div>
+          <div class="mt-3 text-[10px] text-white/45">{photos.structure.credit}</div>
+        </div>
+        <div class="order-1 lg:order-2">
+          <div class="eyebrow">{t.transport.eyebrow}</div>
+          <h2 class="section-title" set:html={t.transport.title}></h2>
+          <div class="mt-8 space-y-3">
+            {t.transport.items.map((item) => (
+              <div class="glass rounded-[1.4rem] p-5">
+                <div class="flex gap-4"><span class="text-xl text-[var(--cyan)]">{item.icon}</span><div><h3 class="font-bold">{item.t}</h3><p class="mt-2 text-sm leading-7 text-[var(--muted)]">{item.d}</p></div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="around" class="section border-y border-[var(--line)] bg-[#07151c]/65">
+      <div class="shell">
+        <div class="eyebrow">{t.around.eyebrow}</div>
+        <h2 class="section-title" set:html={t.around.title}></h2>
+        <p class="section-lede">{t.around.lede}</p>
+
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {t.around.items.map((item, index) => (
+            <article class="glass reveal-card flex min-h-[300px] flex-col rounded-[1.8rem] p-6">
+              <div class="text-xs font-bold text-[var(--cyan)]">0{index + 1}</div>
+              <div class="mt-auto pt-12">
+                <div class="text-[11px] uppercase tracking-[.13em] text-[var(--muted)]">{item.t}</div>
+                <h3 class="mt-2 text-xl font-semibold">{item.n}</h3>
+                <p class="mt-3 text-sm leading-7 text-[var(--muted)]">{item.d}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <div class="grid gap-8 lg:grid-cols-[.7fr_1.3fr] lg:items-end">
+          <div>
+            <div class="eyebrow">{t.food.eyebrow}</div>
+            <h2 class="section-title" set:html={t.food.title}></h2>
+          </div>
+          <p class="section-lede">{t.food.lede}</p>
+        </div>
+        <div class="mt-10 grid gap-4 lg:grid-cols-3">
+          {t.food.items.map((item) => (
+            <article class="glass reveal-card rounded-[1.8rem] p-6">
+              <span class="pill inline-flex px-3 py-1 text-[10px] font-bold uppercase tracking-[.14em] text-[var(--cyan)]">{item.tag}</span>
+              <h3 class="mt-5 text-xl font-semibold">{item.n}</h3>
+              <p class="mt-3 text-sm leading-7 text-[var(--muted)]">{item.d}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="relative min-h-[58vh] overflow-hidden border-y border-[var(--line)]">
+      <img src={photos.historic.src} width={photos.historic.width} height={photos.historic.height} alt={alt(photos.historic)} loading="lazy" decoding="async" class="absolute inset-0 h-full w-full object-cover" />
+      <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,15,21,.93),rgba(4,15,21,.45),rgba(4,15,21,.82))]"></div>
+      <div class="shell relative z-10 flex min-h-[58vh] items-center py-20">
+        <div class="max-w-xl">
+          <div class="eyebrow">{t.photoTip.eyebrow}</div>
+          <h2 class="mt-5 text-[clamp(2.3rem,6vw,5rem)] font-semibold leading-[.98] tracking-[-.055em]" set:html={t.photoTip.title}></h2>
+          <p class="mt-5 max-w-lg text-sm leading-8 text-[#c9dce1]">{t.photoTip.p}</p>
+        </div>
+      </div>
+      <div class="absolute bottom-4 right-4 z-10 rounded-full bg-black/45 px-3 py-1 text-[10px] text-white/70 backdrop-blur">{photos.historic.credit}</div>
+    </section>
+
+    <section id="gallery" class="section border-t border-[var(--line)]">
+      <div class="shell">
+        <div class="grid gap-8 lg:grid-cols-[.7fr_1.3fr] lg:items-end">
+          <div>
+            <div class="eyebrow">{t.gallery.eyebrow}</div>
+            <h2 class="section-title" set:html={t.gallery.title}></h2>
+          </div>
+          <p class="section-lede">{t.gallery.lede}</p>
+        </div>
+
+        <div class="mt-10 gap-4 sm:columns-2 lg:columns-3">
+          {gallery.map((item) => (
+            <figure class="glass reveal-card mb-4 break-inside-avoid overflow-hidden rounded-[1.4rem]">
+              <img
+                src={item.src}
+                width={item.width}
+                height={item.height}
+                alt={alt(item)}
+                loading="lazy"
+                decoding="async"
+                class="w-full object-cover"
+              />
+              <figcaption class="px-4 py-3 text-[10px] leading-5 text-white/50">{item.credit}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section id="map" class="section">
+      <div class="shell">
+        <div class="grid gap-8 lg:grid-cols-[.7fr_1.3fr] lg:items-end">
+          <div>
+            <div class="eyebrow">{t.map.eyebrow}</div>
+            <h2 class="section-title" set:html={t.map.title}></h2>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 lg:justify-end">
+            <span class="pill px-4 py-2 text-xs text-[var(--muted)]">{attraction.plusCode}</span>
+            <a class="btn btn-secondary" href={attraction.mapShortUrl} target="_blank" rel="noreferrer">{t.map.openMap}</a>
+          </div>
+        </div>
+
+        <div class="map-frame glass mt-9 overflow-hidden rounded-[2rem] p-1">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5299.074806901684!2d44.80570581312101!3d41.693001871142826!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40440cfa8ef08685%3A0xd34052e2ec5319f9!2z5ZKM5bmz5qGl!5e1!3m2!1ska!2sge!4v1789025763900!5m2!1ska!2sge"
+            width="600"
+            height="450"
+            style="border:0;"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            title={attraction.names[locale]}
+          ></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="section border-t border-[var(--line)]">
+      <div class="shell grid gap-10 lg:grid-cols-[.7fr_1.3fr]">
+        <div>
+          <div class="eyebrow">{t.faq.eyebrow}</div>
+          <h2 class="section-title" set:html={t.faq.title}></h2>
+          <p class="section-lede">{t.faq.lede}</p>
+        </div>
+        <div class="space-y-3">
+          {t.faq.items.map((item, index) => (
+            <details class="glass group rounded-[1.4rem] px-5 py-1 open:border-[rgba(121,230,238,.36)]">
+              <summary class="flex cursor-pointer items-center justify-between gap-5 py-5 font-semibold">
+                <span><span class="mr-3 text-xs text-[var(--cyan)]">0{index + 1}</span>{item.q}</span>
+                <span class="text-xl font-light text-[var(--cyan)] transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p class="max-w-2xl pb-5 text-sm leading-7 text-[var(--muted)]">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-[var(--line)] py-10">
+    <div class="shell">
+      <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div class="flex items-center gap-3">
+            <img src="/logo.svg" alt="" width="46" height="46" class="h-11 w-11" />
+            <div><div class="font-bold">{attraction.names[locale]}</div><div class="mt-1 text-[10px] uppercase tracking-[.18em] text-[var(--muted)]">{brandSub}</div></div>
+          </div>
+          <p class="mt-5 max-w-xl text-xs leading-6 text-[#849fa8]">{t.footer.disclaimer}</p>
+        </div>
+        <div class="text-left text-xs leading-6 text-[#7f9aa4] md:text-right">
+          <div>{photosLabel}</div>
+          <div>{t.footer.sources}</div>
+          <div class="mt-2">{t.footer.ga}</div>
+        </div>
+      </div>
+    </div>
+  </footer>
+</BaseLayout>

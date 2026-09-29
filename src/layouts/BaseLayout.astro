@@ -4,6 +4,9 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description: string;
+  htmlLang: string;
+  ogLocale: string;
+  hreflangAlternates: { hreflang: string; href: string }[];
   ogImagePath?: string;
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
@@ -11,6 +14,9 @@ interface Props {
 const {
   title,
   description,
+  htmlLang,
+  ogLocale,
+  hreflangAlternates,
   ogImagePath = '/social-card.jpg',
   jsonLd
 } = Astro.props;
@@ -18,8 +24,9 @@ const {
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const ogImageUrl = Astro.site ? new URL(ogImagePath, Astro.site).toString() : undefined;
 ---
+
 <!doctype html>
-<html lang="ka">
+<html lang={htmlLang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,8 +35,11 @@ const ogImageUrl = Astro.site ? new URL(ogImagePath, Astro.site).toString() : un
     <title>{title}</title>
 
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {hreflangAlternates.map((a) => (
+      <link rel="alternate" hreflang={a.hreflang} href={a.href} />
+    ))}
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content="ka_GE" />
+    <meta property="og:locale" content={ogLocale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}

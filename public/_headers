@@ -1,0 +1,15 @@
+# Enforce HTTPS transport security and harden responses.
+# (HTTP → HTTPS 301 must be configured in the Cloudflare dashboard:
+#  SSL/TLS → Edge Certificates → Always Use HTTPS, plus a redirect
+#  rule for www → apex if a www subdomain is ever added.)
+
+/*
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Service worker must never be cached so updates roll out immediately.
+/sw.js
+  Cache-Control: no-cache

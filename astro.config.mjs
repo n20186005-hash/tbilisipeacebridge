@@ -4,14 +4,20 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
 // Production origin: set the final domain in this one place only.
-// Leave empty until the domain is known; the project still builds without it.
-const site = '';
+const site = 'https://tbilisipeacebridge.com';
 
 export default defineConfig({
-  site: site || undefined,
+  site,
   output: 'server',
   adapter: cloudflare(),
-  integrations: site ? [sitemap()] : [],
+  integrations: [
+    sitemap({
+      i18n: {
+        defaultLocale: 'ka',
+        locales: { ka: 'ka-GE', en: 'en-US', ru: 'ru-RU' }
+      }
+    })
+  ],
   vite: {
     plugins: [tailwindcss()]
   }
