@@ -130,7 +130,7 @@ importers:
         version: 0.9.10(prettier@3.9.6)(typescript@6.0.3)
       sharp:
         specifier: 0.35.4
-        version: 0.35.4
+        version: 0.35.4(@types/node@24.13.3)
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -4289,7 +4289,6 @@ snapshots:
       '@img/sharp-win32-ia32': 0.35.4
       '@img/sharp-win32-x64': 0.35.4
       '@types/node': 24.13.3
-    optional: true
 
   shiki@4.4.3:
     dependencies:
