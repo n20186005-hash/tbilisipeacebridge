@@ -7,6 +7,10 @@ export async function route(request, env, context, delegate = server) {
     return new Response(null, {status:308, headers:{Location:url.href}});
   }
   const head = request.method === 'HEAD';
+  if ((request.method === 'GET' || head) && /^\/(?:en|ru)$/.test(url.pathname)) {
+    url.pathname += '/';
+    return new Response(null, {status:308, headers:{Location:url.href}});
+  }
   if ((request.method === 'GET' || head) && /^\/(?:en\/|ru\/)?index(?:\.html)?$/.test(url.pathname)) {
     url.pathname = url.pathname.startsWith('/en/') ? '/en/' : url.pathname.startsWith('/ru/') ? '/ru/' : '/'; return new Response(null,{status:308,headers:{Location:url.href}});
   }
