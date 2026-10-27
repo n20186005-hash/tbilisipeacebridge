@@ -12,38 +12,24 @@ const t = content[locale];
 
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
 const attractionId = canonicalUrl ? `${canonicalUrl}#attraction` : undefined;
-const siteOrigin = Astro.site ? new URL('/', Astro.site).toString().replace(/\/$/, '') : undefined;
-const photoUrls = siteOrigin
-  ? [photos.hero.src, photos.river.src, photos.structure.src, photos.historic.src].map((s) => `${siteOrigin}${s}`)
-  : undefined;
 
 const reviewCountStr = attraction.reviewCount.toLocaleString(
   locale === 'ru' ? 'ru-RU' : locale === 'ka' ? 'ka-GE' : 'en-US'
 );
 
-const openingHours = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(
-  (dayOfWeek) => ({
-    '@type': 'OpeningHoursSpecification',
-    dayOfWeek,
-    opens: '00:00',
-    closes: '23:59'
-  })
-);
 
 const attractionLd = {
   '@context': 'https://schema.org',
-  '@type': ['TouristAttraction', 'LocalBusiness'],
+  '@type': ['TouristAttraction', 'Place'],
   ...(attractionId ? { '@id': attractionId } : {}),
   name: attraction.names[locale],
   description: t.attractionDescription,
   ...(canonicalUrl ? { url: canonicalUrl } : {}),
-  ...(photoUrls ? { image: photoUrls } : {}),
   address: {
     '@type': 'PostalAddress',
     streetAddress: attraction.streetAddress[locale],
     addressLocality: attraction.city,
     addressRegion: attraction.region,
-    postalCode: attraction.postalCode,
     addressCountry: 'GE'
   },
   geo: {
@@ -51,17 +37,6 @@ const attractionLd = {
     latitude: attraction.latitude,
     longitude: attraction.longitude
   },
-  openingHoursSpecification: openingHours,
-  priceRange: attraction.priceFreeLabel[locale],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: attraction.ratingValue,
-    reviewCount: attraction.reviewCount,
-    bestRating: 5,
-    worstRating: 1
-  },
-  isAccessibleForFree: true,
-  publicAccess: true,
   sameAs: [attraction.mapShortUrl]
 };
 
@@ -83,8 +58,9 @@ const alt = (p: { alt: string; altEn: string; altRu: string }) =>
 
 const brandSub = locale === 'en' ? 'Tbilisi · Kura' : locale === 'ru' ? 'Тбилиси · Кура' : 'თბილისი · მტკვარი';
 const navLabel = locale === 'en' ? 'Main navigation' : locale === 'ru' ? 'Главная навигация' : 'მთავარი ნავიგაცია';
-const langLabel = locale === 'en' ? 'Language' : locale === 'ru' ? 'Язык' : 'ენა';
-const photosLabel = locale === 'en' ? 'Photos: Wikimedia Commons' : locale === 'ru' ? 'Фото: Wikimedia Commons' : 'ფოტოები: Wikimedia Commons';
+const photosLabel = locale === 'en' ? 'Historical panoramas: Wikimedia Commons · Original concept graphics' : locale === 'ru' ? 'Исторические панорамы: Wikimedia Commons · Оригинальные схемы' : 'ისტორიული პანორამები: Wikimedia Commons · ორიგინალური ილუსტრაციები';
+const conceptLabel = locale === 'en' ? 'Original concept · not a photograph' : locale === 'ru' ? 'Оригинальная схема · не фотография' : 'ორიგინალური ილუსტრაცია · არა ფოტო';
+const photoSources = {"/gallery/peace-bridge-tbilisi-6.jpg": {"url": "https://commons.wikimedia.org/wiki/File%3ATbilisi-Fluss_Mtkwari-08-von_Friedensbruecke-2019-gje.jpg", "license": "https://creativecommons.org/licenses/by-sa/4.0/"}, "/gallery/peace-bridge-tbilisi-10.jpg": {"url": "https://commons.wikimedia.org/wiki/File%3A2016_Tbilisi%2C_Widoki_z_Twierdzy_Narikala_(18).jpg", "license": "https://creativecommons.org/licenses/by-sa/4.0/"}, "/gallery/peace-bridge-tbilisi-11.jpg": {"url": "https://commons.wikimedia.org/wiki/File%3A2016_Tbilisi%2C_Widoki_z_Twierdzy_Narikala_(19).jpg", "license": "https://creativecommons.org/licenses/by-sa/4.0/"}, "/gallery/peace-bridge-tbilisi-12.jpg": {"url": "https://commons.wikimedia.org/wiki/File%3A2014_Tbilisi%2C_Widoki_z_Twierdzy_Narikala_(06).jpg", "license": "https://creativecommons.org/licenses/by-sa/4.0/"}, "/gallery/peace-bridge-tbilisi-13.jpg": {"url": "https://commons.wikimedia.org/wiki/File%3A2014_Tbilisi%2C_Widok_z_Mostu_Pokoju_na_rzek%C4%99_Kura_i_jej_okolice_(01).jpg", "license": "https://creativecommons.org/licenses/by-sa/4.0/"}, "/gallery/peace-bridge-tbilisi-14.jpg": {"url": "https://commons.wikimedia.org/wiki/File%3A2014_Tbilisi%2C_Widok_z_Mostu_Pokoju_na_rzek%C4%99_Kura_i_jej_okolice_(07).jpg", "license": "https://creativecommons.org/licenses/by-sa/4.0/"}, "/gallery/peace-bridge-tbilisi-15.jpg": {"url": "https://commons.wikimedia.org/wiki/File%3A2014_Tbilisi%2C_Widok_z_Mostu_Pokoju_na_rzek%C4%99_Kura_i_jej_okolice_(09).jpg", "license": "https://creativecommons.org/licenses/by-sa/4.0/"}};
 const homeHref = locale === 'ka' ? '#top' : `/${locale}/#top`;
 const homeAria = locale === 'en' ? 'Back to top' : locale === 'ru' ? 'Наверх' : 'მთავარ ნაწილზე გადასვლა';
 
@@ -102,6 +78,8 @@ const switchItems: { code: string; href: string; label: string }[] = [
   ogLocale={ogLocale[locale]}
   hreflangAlternates={buildAlternates()}
   jsonLd={[attractionLd, faqLd]}
+  ogImagePath={photos.hero.src}
+  ogImageAlt={alt(photos.hero)}
 >
   <header class="fixed inset-x-0 top-0 z-50 pt-4">
     <div class="shell glass flex items-center justify-between gap-4 rounded-full px-4 py-3 md:px-5">
@@ -120,7 +98,7 @@ const switchItems: { code: string; href: string; label: string }[] = [
         <a class="no-underline hover:text-white" href={locale === 'ka' ? '#map' : `/${locale}/#map`}>{t.nav.map}</a>
         <a class="no-underline hover:text-white" href={locale === 'ka' ? '#faq' : `/${locale}/#faq`}>{t.nav.faq}</a>
       </nav>
-      <div class="flex items-center gap-1 rounded-full border border-[var(--line)] px-1 py-1 text-[11px] font-bold">
+      <div class="language-switcher flex items-center gap-1 rounded-full border border-[var(--line)] px-1 py-1 text-[11px] font-bold">
         {switchItems.map((s) => (
           <a
             href={s.href}
@@ -172,7 +150,7 @@ const switchItems: { code: string; href: string; label: string }[] = [
             </div>
             <div class="border-b border-[var(--line)] p-5">
               <div class="text-3xl font-semibold tracking-[-.04em]">≈ {attraction.lengthMeters} {locale === 'ka' ? 'მ' : locale === 'ru' ? 'м' : 'm'}</div>
-              <div class="mt-1 text-xs text-[var(--muted)]">{t.stats.length}</div>
+              <div class="mt-1 text-xs text-[var(--muted)]">{t.stats.length} · Cimolai</div>
             </div>
             <div class="border-r border-[var(--line)] p-5 lg:border-r-0 lg:border-b">
               <div class="text-3xl font-semibold tracking-[-.04em]">≈ {attraction.ledCount.toLocaleString('en-US')}</div>
@@ -180,12 +158,12 @@ const switchItems: { code: string; href: string; label: string }[] = [
             </div>
             <div class="p-5">
               <div class="flex items-center gap-2 text-3xl font-semibold tracking-[-.04em]"><span class="text-[var(--cyan)]">★</span>{attraction.ratingValue}</div>
-              <div class="mt-1 text-xs text-[var(--muted)]">{t.stats.rating} {reviewCountStr}</div>
+              <div class="mt-1 text-xs text-[var(--muted)]">{t.stats.rating} {reviewCountStr} · 26.10.2026</div>
             </div>
           </div>
         </div>
       </div>
-      <div class="absolute bottom-4 right-4 z-10 rounded-full bg-black/45 px-3 py-1 text-[10px] text-white/70 backdrop-blur md:bottom-6 md:right-6">{photos.hero.credit}</div>
+      <div class="absolute bottom-4 right-4 z-10 rounded-full bg-black/45 px-3 py-1 text-[10px] text-white/70 backdrop-blur md:bottom-6 md:right-6">{conceptLabel}</div>
     </section>
 
     <section id="story" class="section overflow-hidden">
@@ -205,7 +183,7 @@ const switchItems: { code: string; href: string; label: string }[] = [
               <div class="text-sm font-bold text-[var(--cyan)]">{t.story.cards[1].t}</div>
               <p class="mt-3 text-sm leading-7 text-[#c9dbe0]">{t.story.cards[1].d}</p>
             </div>
-            <div class="mt-3 text-right text-[10px] text-white/45">{photos.river.credit}</div>
+            <div class="mt-3 text-right text-[10px] text-white/45">{conceptLabel}</div>
           </div>
         </div>
 
@@ -252,7 +230,6 @@ const switchItems: { code: string; href: string; label: string }[] = [
 
           <article class="glass rounded-[2rem] p-6 lg:col-span-5 md:p-8">
             <div class="text-xs font-bold uppercase tracking-[.15em] text-[var(--cyan)]">{t.visit.ticket.label}</div>
-            <div class="mt-5 text-[clamp(2.8rem,6vw,5rem)] font-semibold tracking-[-.06em]">₾ 0</div>
             <h3 class="mt-2 text-xl font-semibold">{t.visit.ticket.t}</h3>
             <p class="mt-3 text-sm leading-7 text-[var(--muted)]">{t.visit.ticket.d}</p>
             <div class="mt-6 border-t border-[var(--line)] pt-5 text-xs leading-6 text-[#bcd0d5]">{t.visit.ticket.note}</div>
@@ -283,7 +260,7 @@ const switchItems: { code: string; href: string; label: string }[] = [
           <div class="overflow-hidden rounded-[2rem] border border-[var(--line)]">
             <img src={photos.structure.src} width={photos.structure.width} height={photos.structure.height} alt={alt(photos.structure)} loading="lazy" decoding="async" class="aspect-[5/4] w-full object-cover" />
           </div>
-          <div class="mt-3 text-[10px] text-white/45">{photos.structure.credit}</div>
+          <div class="mt-3 text-[10px] text-white/45">{conceptLabel}</div>
         </div>
         <div class="order-1 lg:order-2">
           <div class="eyebrow">{t.transport.eyebrow}</div>
@@ -351,7 +328,7 @@ const switchItems: { code: string; href: string; label: string }[] = [
           <p class="mt-5 max-w-lg text-sm leading-8 text-[#c9dce1]">{t.photoTip.p}</p>
         </div>
       </div>
-      <div class="absolute bottom-4 right-4 z-10 rounded-full bg-black/45 px-3 py-1 text-[10px] text-white/70 backdrop-blur">{photos.historic.credit}</div>
+      <div class="absolute bottom-4 right-4 z-10 rounded-full bg-black/45 px-3 py-1 text-[10px] text-white/70 backdrop-blur">{conceptLabel}</div>
     </section>
 
     <section id="gallery" class="section border-t border-[var(--line)]">
@@ -374,9 +351,9 @@ const switchItems: { code: string; href: string; label: string }[] = [
                 alt={alt(item)}
                 loading="lazy"
                 decoding="async"
-                class="w-full object-cover"
+                class="context-panorama h-auto w-full"
               />
-              <figcaption class="px-4 py-3 text-[10px] leading-5 text-white/50">{item.credit}</figcaption>
+              <figcaption class="px-4 py-3 text-[10px] leading-5 text-white/50">{item.credit} · <a href={photoSources[item.src]?.url}>Commons</a> · <a href={photoSources[item.src]?.license}>↗</a></figcaption>
             </figure>
           ))}
         </div>
@@ -445,8 +422,8 @@ const switchItems: { code: string; href: string; label: string }[] = [
         </div>
         <div class="text-left text-xs leading-6 text-[#7f9aa4] md:text-right">
           <div>{photosLabel}</div>
-          <div>{t.footer.sources}</div>
-          <div class="mt-2">{t.footer.ga}</div>
+          <div>{t.footer.sources}</div><div class="source-links"><a href="https://georgia.travel/tbilisi-peace-bridge">Georgia Travel</a> · <a href="https://georgia.travel/strolling-through-the-old-city-of-tbilisi">Old Tbilisi</a> · <a href="https://www.cimolai.com/en/projects/peace-bridge/">Cimolai</a> · <a href="https://fm-ingegneria.com/en/projects/bridge-of-peace-in-tbilisi/">F&amp;M</a></div>
+          <div class="mt-2 max-w-xl">{t.footer.ga}</div><div><a href="https://policies.google.com/privacy">Google</a> · <a href="https://developers.cloudflare.com/web-analytics/data-metrics/data-origin-and-collection/">Cloudflare Web Analytics</a></div>
         </div>
       </div>
     </div>

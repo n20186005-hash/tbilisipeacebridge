@@ -9,12 +9,13 @@ const site = 'https://tbilisipeacebridge.com';
 export default defineConfig({
   site,
   output: 'server',
-  adapter: cloudflare(),
+  adapter: cloudflare({configPath:'./wrangler.jsonc'}),
   integrations: [
     sitemap({
+      filter: (page) => !/\/404(?:\/|$)/.test(page),
       i18n: {
         defaultLocale: 'ka',
-        locales: { ka: 'ka-GE', en: 'en-US', ru: 'ru-RU' }
+        locales: { ka: 'ka-GE', en: 'en', ru: 'ru' }
       }
     })
   ],

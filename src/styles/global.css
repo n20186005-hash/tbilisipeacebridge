@@ -84,3 +84,9 @@ summary { list-style: none; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Keep Georgian headings and source links inside their own layout columns. */
+main .grid > *, .source-links { min-width: 0; }
+h1, h2, h3, .source-links { overflow-wrap: anywhere; }
+.language-switcher a[aria-current="true"] { color: #06121a; }
+.context-panorama { display: block; width: 100%; height: auto; object-fit: contain; }

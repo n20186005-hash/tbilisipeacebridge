@@ -8,6 +8,7 @@ interface Props {
   ogLocale: string;
   hreflangAlternates: { hreflang: string; href: string }[];
   ogImagePath?: string;
+  ogImageAlt?: string;
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
@@ -17,7 +18,8 @@ const {
   htmlLang,
   ogLocale,
   hreflangAlternates,
-  ogImagePath = '/social-card.jpg',
+  ogImagePath = '/images/river-context-concept.svg',
+  ogImageAlt = 'Concept illustration — not a photograph or measured map',
   jsonLd
 } = Astro.props;
 
@@ -44,10 +46,12 @@ const ogImageUrl = Astro.site ? new URL(ogImagePath, Astro.site).toString() : un
     <meta property="og:description" content={description} />
     {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
     {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    <meta property="og:image:alt" content={ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+    <meta name="twitter:image:alt" content={ogImageAlt} />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />

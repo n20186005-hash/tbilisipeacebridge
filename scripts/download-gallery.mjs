@@ -11,7 +11,7 @@ mkdirSync(outDir, { recursive: true });
 const UA =
   'TbilisiPeaceBridgeGuide/1.0 (https://tbilisipeacebridge.com; photo sourcing for visitor guide)';
 
-// 精选：均为 Commons 上可自由使用（CC0 / CC BY / CC BY-SA）的和平桥实拍
+// Historical source candidates only. Per-file photograph terms do not clear depicted architectural rights; consult current PHOTO-CREDITS.md before reuse.
 const picks = [
   'File:Tbilisi at night, Kura River, Georgia.jpg',
   'File:Tbilisi Peace Bridge5.jpg',

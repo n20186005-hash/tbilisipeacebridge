@@ -1,62 +1,9 @@
-# მშვიდობის ხიდი — Astro / Cloudflare Worker
+# Bridge of Peace visitor guide
 
-ერთგვერდიანი ქართული ტურისტული საიტი თბილისის მშვიდობის ხიდისთვის. ვიზუალური ენა აგებულია ხიდის რეალურ ნიშნებზე: ცისფერი მინა, თეთრი ფოლადის ბადე, მტკვრის ხაზები და ღამის LED განათება.
+Independent nonprofit educational guide in Georgian, English and Russian. Astro Cloudflare SSR preserves the three existing visitor pages and supplies a real noindex error response.
 
-## ტექნოლოგიები
+Use the exact Node and pnpm versions in package.json. Run `pnpm install --frozen-lockfile`, `pnpm check`, `pnpm build`, then the existing Wrangler deployment command. The default Worker guard runs before adapter asset handling; generated configuration is in dist/server.
 
-- Astro 7.3.2
-- Tailwind CSS 4.3.3 (`@tailwindcss/vite`)
-- TypeScript 6.0.3 — არჩეულია `@astrojs/check` 0.9.10-ის თავსებადობის გამო (TypeScript 7 ამ check ვერსიასთან არ გამოიყენება)
-- `@astrojs/cloudflare` 14.3.1
-- `@astrojs/sitemap` 3.7.4
-- Wrangler 4.130.0
-- sharp 0.35.4 — მხოლოდ ფოტოების წინასწარი ოპტიმიზაციისთვის (`devDependency`)
-- pnpm 12.3.4
-- Node.js 24.21.0 LTS
+The page loads Google Analytics without a preference selector and embeds Google Maps. Hosting analytics are separate. Presence of a script is not evidence of successful delivery.
 
-## pnpm კონფიგურაცია
-
-`pnpm-workspace.yaml` არის ერთპაკეტიანი workspace-ის (`packages: ['.']`)
-კონფიგურაცია. მასში `allowBuilds`-ით მხოლოდ ის დამოკიდებულებებია ნებადართული,
-რომლებსაც ნამდვილად სჭირდებათ postinstall ნაბიჯი — `esbuild`, `workerd`,
-`sharp`. დანარჩენების build სკრიპტები გამოტოვებულია.
-
-## დომენის ერთი წყარო
-
-დომენი კონფიგურირდება მხოლოდ `astro.config.mjs`-ში:
-
-```js
-const site = '';
-```
-
-ცარიელი მნიშვნელობა დასაშვებია. ასეთ დროს canonical / absolute Open Graph URL-ები არ იწერება და sitemap ინტეგრაცია არ ირთვება. დომენის არჩევის შემდეგ მხოლოდ ამ ერთ მნიშვნელობაში ჩაწერეთ სრული production origin და თავიდან ააგეთ პროექტი.
-
-## გაშვება
-
-```bash
-corepack enable
-CI=1 corepack pnpm install --frozen-lockfile
-pnpm check
-pnpm build
-pnpm deploy
-```
-
-## Google Analytics
-
-GA4 Measurement ID: `G-HXM22WWPKP`.
-
-## ფოტოები
-
-ყველა ფოტო ლოკალურია და გარე ჰოსტს არ მიმართავს: `public/images/` შეიცავს 4 ძირითად კადრს, `public/gallery/` — 15 ფოტოს გალერეისთვის. ჩამოტვირთვის შემდეგ ისინი ერთხელ დამუშავდა `node scripts/optimize-images.mjs`-ით (ზომის შემცირება მაქს. 1920/1400 px-მდე + mozjpeg), რის შედეგად საწყისი 20.6 MB შემცირდა 3.9 MB-მდე (‑81%). ფაილების წყარო, ავტორები და ლიცენზიები აღწერილია `PHOTO-CREDITS.md`-ში, ხოლო მანქანურად წასაკითხი სია — `scripts/photo-attributions.json`-ში. ახალი ფოტოს დამატებისას განაახლეთ `gallery` მასივი `src/data/site.ts`-ში.
-
-## რუკა
-
-მომხმარებლის მიერ მოწოდებული Google Maps iframe შენარჩუნებულია, ხოლო ენის/რეგიონის პარამეტრები შეცვლილია ქართულზე (`ka`) და საქართველოზე (`ge`).
-
-## მონაცემთა წყაროები
-
-ძირითადი ფაქტობრივი წყარო: საქართველოს ტურიზმის ეროვნული ადმინისტრაციის Georgia Travel გვერდები მშვიდობის ხიდის, რიყის პარკისა და ძველი თბილისის შესახებ. Google Maps-ის შეფასება და მიმოხილვების რაოდენობა აღებულია დავალებაში მოწოდებული მონაცემებიდან.
-
-## თვითშემოწმების სტატუსი ამ მიწოდებაში
-
-CI თანმიმდევრობა რეალურად შესრულებულია ქსელთან წვდომის მქონე გარემოში: `CI=1 corepack pnpm install --frozen-lockfile` გადის, `pnpm check` იძლევა 0 შეცდომას / 0 გაფრთხილებას / 0 მინიშნებას, ხოლო `pnpm build` წარმატებით აგებს Cloudflare adapter-ის server output-ს. დეტალები ინახება `SELF-CHECK.txt`-ში.
+Photo sources and per-file rights are recorded in PHOTO-CREDITS.md and linked beside displayed images. Historical photographs do not establish current conditions.

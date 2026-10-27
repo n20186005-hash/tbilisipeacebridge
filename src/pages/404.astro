@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+export const prerender = false;
+Astro.response.status = 404;
+Astro.response.headers.set('X-Robots-Tag','noindex');
+---
+<BaseLayout title="გვერდი ვერ მოიძებნა | Bridge of Peace" description="გვერდი ვერ მოიძებნა / Page not found / Страница не найдена" htmlLang="ka-GE" ogLocale="ka_GE" hreflangAlternates={[]}>
+<main class="shell py-32"><h1>გვერდი ვერ მოიძებნა</h1><p lang="en">Page not found</p><p lang="ru">Страница не найдена</p><p><a href="/">ქართული</a> · <a href="/en/">English</a> · <a href="/ru/">Русский</a></p></main>
+</BaseLayout>
